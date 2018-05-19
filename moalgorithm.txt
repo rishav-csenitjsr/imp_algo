@@ -1,0 +1,126 @@
+    #include <bits/stdc++.h>
+    #include <iomanip>
+    using namespace std;
+    #define lli long long
+    #define ull unsigned long long
+    #define opt ios_base::sync_with_stdio(false);cin.tie(NULL);cout.tie(NULL);
+    #define pb push_back
+    #define mp make_pair
+    #define rep(i,n) for(i=0;i<n;i++)
+    #define repl(i,a,b) for(i=a;i<b;i++)
+    #define repa(i,a,b) for(i=a;i<=b;i++)
+    #define repr(i,n) for(i=n-1;i>=0;i--)
+    #define nl cout<<"\n";
+    #define M 1000000007
+    #define N 1000005
+    #define MAX 1000005
+     
+    int sqrt_n;
+    lli F[MAX];
+    lli A[MAX];
+    lli inv_F[MAX];
+    lli cnt[MAX];
+    lli ans;
+     
+    struct query {
+        int l, r, idx;
+        query() { }
+        query(int x, int y, int idx) {
+            this->l = x, this->r = y, this->idx = idx;
+        }
+    };
+     
+    bool cmp(query q1, query q2)
+    {
+        if ( q1.l/sqrt_n != q2.l/sqrt_n) {
+            return q1.l < q2.l;    
+        }
+        return q1.r < q2.r;
+    }
+     
+    void add(int idx)
+    {
+        ans = (ans*inv_F[cnt[A[idx]]])%M;
+        cnt[A[idx]]++;
+        ans = (ans*F[cnt[A[idx]]])%M;
+        return;
+    }
+     
+    void _remove(int idx)
+    {
+        ans = (ans*inv_F[cnt[A[idx]]])%M;
+        cnt[A[idx]]--;
+        ans = (ans*F[cnt[A[idx]]])%M;
+        return;
+    }
+     
+    lli fast_pow(lli a, lli b)
+    {
+        lli res = 1;
+        while ( b > 0 ) {
+            if ( b & 1 ) res = (res*a)%M;
+            a = (a*a)%M;
+            b >>= 1;
+        }
+        return res;
+    }
+     
+    void solve()
+    { 
+        int n, c, q, l = 0, r = 0, x, y;
+        lli fin_val = 1;
+        
+        vector <query> Q;
+        
+        cin >> n >> c >> q;
+        sqrt_n = (int)sqrt(n);
+        
+        for ( int i = 0; i < n; i++ ) cin >> A[i];
+        
+        for ( int i = 0; i <= n; i++ ) {
+            cin >> F[i];
+            inv_F[i] = fast_pow(F[i], M - 2);
+        }
+        
+        for ( int i = 0; i < q; i++ ) {
+            cin >> x >> y;
+            x--, y--;
+            Q.push_back(query(x, y, i));
+        }
+        
+        sort(Q.begin(), Q.end(), cmp);
+        
+        ans = 1;
+        for ( int i = 1; i <= c; i++ ) ans = (ans*F[cnt[i]])%M;
+        
+        for ( int i = 0; i < q; i++ ) 
+        {
+            while ( l > Q[i].l ) {
+                add(l - 1);
+                l--;
+            }
+            while ( r <= Q[i].r ) {
+                add(r);
+                r++;
+            }
+            while ( l < Q[i].l ) {
+                _remove(l);
+                l++;
+            }  
+            while ( r > Q[i].r + 1 ) {
+                _remove(r - 1);
+                r--;
+            }
+            
+            fin_val = (fin_val*ans)%M;
+        }
+        cout << fin_val;
+        nl;
+    }
+     
+    int main()
+    {
+        opt;
+        solve();
+        return 0;
+    }       
